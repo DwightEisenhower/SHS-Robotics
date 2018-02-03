@@ -26,55 +26,131 @@
 |*    Motor Port 5        clawMotor             VEX 3-wire module     Left side motor                 *|
 \*----------------------------------------------------------------------------------------------------*/
 
+/* Platform - do not modify */
+#pragma platform(VEX2)
 
-//+++++++++++++++++++++++++++++++++++++++++++++| MAIN |+++++++++++++++++++++++++++++++++++++++++++++++
-task main(){
-		while(true) {
-			  /* See http://www.robotc.net/wikiarchive/Data_Types for
-			   * a list of variables */
+#pragma competitionControl(Competition)
+#pragma autonomousDuration(15)
+#pragma userControlDuration(180) //Purposefully longer, to handle delays/timing errors
 
+#include "Vex_Competition_Includes.c"  //Main competition background code...do not modify!
 
-				/* Handles movement and turning.
-				* Left side speed  = Left joystick vertical motion
-				* Right side speed = Right joystick vertical motion */
-				motor[leftMotor] = -vexRT[Ch3];
-				motor[rightMotor] = -vexRT[Ch2];
+/*---------------------------------------------------------------------------*/
+/*                          Pre-Autonomous Functions                         */
+/*                                                                           */
+/*  You may want to perform some actions before the competition starts.      */
+/*  Do them in the following function.  You must return from this function   */
+/*  or the autonomous and usercontrol tasks will not be started.  This       */
+/*  function is only called once after the cortex has been powered on and    */
+/*  not every time that the robot is disabled.                               */
+/*---------------------------------------------------------------------------*/
 
-				/* Crane */
-				if(vexRT[Btn5U] == 1) {
-						motor[craneMotor] = 127;
-				}
-				else if(vexRT[Btn5D] == 1) {
-						motor[craneMotor] = -127;
-				}
-				else {
-						motor[craneMotor] = 0;
-				}
+void pre_auton()
+{
+  // Set bStopTasksBetweenModes to false if you want to keep user created tasks
+  // running between Autonomous and Driver controlled modes. You will need to
+  // manage all user created tasks if set to false.
+  bStopTasksBetweenModes = true;
 
-				/* Arm motor */
-				if(vexRT[Btn6U] == 1) {
-						motor[armMotor] = 127;
-				}
-				else if(vexRT[Btn6D] == 1) {
-						motor[armMotor] = -127;
-				}
-				else {
-						motor[armMotor] = 0;
-				}
+	// Set bDisplayCompetitionStatusOnLcd to false if you don't want the LCD
+	// used by the competition include file, for example, you might want
+	// to display your team name on the LCD in this function.
+	// bDisplayCompetitionStatusOnLcd = false;
 
-				// Claw Controls
-				if(vexRT[Btn7L] == 1){
-						motor[leftClawMotor] = 127;
-				}
-				if(vexRT[Btn7R] == 1){
-						motor[leftClawMotor] = -127;
-				}
-				if(vexRT[Btn8L] == 1){
-						motor[rightClawMotor] = 127;
-				}
-				if(vexRT[Btn8R] == 1){
-						motor[rightClawMotor] = -127;
-				}
-		}
+  // All activities that occur before the competition starts
+  // Example: clearing encoders, setting servo positions, ...
 }
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+/*---------------------------------------------------------------------------*/
+/*                              Autonomous Task                              */
+/*                                                                           */
+/*  This task is used to control your robot during the autonomous phase of   */
+/*  a VEX Competition.                                                       */
+/*                                                                           */
+/*  You must modify the code to add your own robot specific commands here.   */
+/*---------------------------------------------------------------------------*/
+
+task autonomous()
+{
+	/* Move the robot forward approx. 1 m 
+	 * The robot moves at around {INSERT} m/s (Experimentally determined) 
+	 * Thus it should activate both track motors for {INSERT} ms 
+	 *
+	 * Wait time = 1 m / (speed in m/s) * 1000
+	 */
+	motor[leftMotor] = 100;
+	motor[rightMotor] = 100;
+	
+  wait1Msec(530);
+
+  motor[leftMotor] = 0;
+	motor[rightMotor] = 0;
+  
+  /* Move the claw arm upwards 
+   * Arm moves up at ~0.01m/s */
+   
+  // Yeah we're not raising the arm in time
+  motor[armMotor] = 127;
+  wait1Msec(10 * 1000);
+  motor[armMotor] = 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*                                                                           */
+/*                              User Control Task                            */
+/*                                                                           */
+/*  This task is used to control your robot during the user control phase of */
+/*  a VEX Competition.                                                       */
+/*                                                                           */
+/*  You must modify the code to add your own robot specific commands here.   */
+/*---------------------------------------------------------------------------*/
+
+task usercontrol()
+{
+  while(true) {
+		/* See http://www.robotc.net/wikiarchive/Data_Types for
+		* a list of variables */
+		
+		/* Handles movement and turning.
+		* Left side speed  = Left joystick vertical motion
+		* Right side speed = Right joystick vertical motion */
+		motor[leftMotor] = -vexRT[Ch3];
+		motor[rightMotor] = -vexRT[Ch2];
+		
+		/* Crane */
+		if(vexRT[Btn5U] == 1) {
+			motor[craneMotor] = 127;
+		}
+		else if(vexRT[Btn5D] == 1) {
+			motor[craneMotor] = -127;
+		}
+		else {
+			motor[craneMotor] = 0;
+		}
+		
+		/* Arm motor */
+		if(vexRT[Btn6U] == 1) {
+			motor[armMotor] = 127;
+		}
+		else if(vexRT[Btn6D] == 1) {
+			motor[armMotor] = -127;
+		}
+		else {
+			motor[armMotor] = 0;
+		}
+		
+		/* Claw Controls */
+		if(vexRT[Btn7L] == 1){
+			motor[leftClawMotor] = 127;
+		}
+		if(vexRT[Btn7R] == 1){
+			motor[leftClawMotor] = -127;
+		}
+		if(vexRT[Btn8L] == 1){
+			motor[rightClawMotor] = 127;
+		}
+		if(vexRT[Btn8R] == 1){
+			motor[rightClawMotor] = -127;
+		}
+	}
+}
