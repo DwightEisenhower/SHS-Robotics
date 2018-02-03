@@ -72,23 +72,23 @@ void pre_auton()
 
 task autonomous()
 {
-	/* Move the robot forward approx. 1 m 
-	 * The robot moves at around {INSERT} m/s (Experimentally determined) 
-	 * Thus it should activate both track motors for {INSERT} ms 
+	/* Move the robot forward approx. 1 m
+	 * The robot moves at around {INSERT} m/s (Experimentally determined)
+	 * Thus it should activate both track motors for {INSERT} ms
 	 *
 	 * Wait time = 1 m / (speed in m/s) * 1000
 	 */
 	motor[leftMotor] = 100;
 	motor[rightMotor] = 100;
-	
+
   wait1Msec(530);
 
   motor[leftMotor] = 0;
 	motor[rightMotor] = 0;
-  
-  /* Move the claw arm upwards 
+
+  /* Move the claw arm upwards
    * Arm moves up at ~0.01m/s */
-   
+
   // Yeah we're not raising the arm in time
   motor[armMotor] = 127;
   wait1Msec(10 * 1000);
@@ -110,47 +110,47 @@ task usercontrol()
   while(true) {
 		/* See http://www.robotc.net/wikiarchive/Data_Types for
 		* a list of variables */
-		
+
 		/* Handles movement and turning.
 		* Left side speed  = Left joystick vertical motion
 		* Right side speed = Right joystick vertical motion */
 		motor[leftMotor] = -vexRT[Ch3];
 		motor[rightMotor] = -vexRT[Ch2];
-		
+
 		/* Crane */
 		if(vexRT[Btn5U] == 1) {
-			motor[craneMotor] = 127;
+			motor[craneMotor] = 120;
 		}
 		else if(vexRT[Btn5D] == 1) {
-			motor[craneMotor] = -127;
+			motor[craneMotor] = -120;
 		}
 		else {
 			motor[craneMotor] = 0;
 		}
-		
+
 		/* Arm motor */
 		if(vexRT[Btn6U] == 1) {
-			motor[armMotor] = 127;
+			motor[armMotor] = 60;
 		}
 		else if(vexRT[Btn6D] == 1) {
-			motor[armMotor] = -127;
+			motor[armMotor] = -60;
 		}
 		else {
 			motor[armMotor] = 0;
 		}
-		
+
 		/* Claw Controls */
 		if(vexRT[Btn7L] == 1){
-			motor[leftClawMotor] = 127;
+			motor[leftClawMotor] = 40;
 		}
 		if(vexRT[Btn7R] == 1){
-			motor[leftClawMotor] = -127;
+			motor[leftClawMotor] = -40;
 		}
 		if(vexRT[Btn8L] == 1){
-			motor[rightClawMotor] = 127;
+			motor[rightClawMotor] = 40;
 		}
 		if(vexRT[Btn8R] == 1){
-			motor[rightClawMotor] = -127;
+			motor[rightClawMotor] = -40;
 		}
 	}
 }
