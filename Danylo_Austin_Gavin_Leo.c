@@ -1,8 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*        Description: Competition template for VEX EDR                      */
-/*---------------------------------------------------------------------------*/
-
-
 #pragma config(Motor,  port1,   craneMotor, 		 tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,   rightMotor,      tmotorServoContinuousRotation, openLoop, reversed)
 #pragma config(Motor,  port3,   leftMotor,       tmotorServoContinuousRotation, openLoop)
@@ -30,7 +25,6 @@
 |*    Motor Port 4        clawMotor			        VEX 3-wire module     Left side motor                 *|
 |*    Motor Port 5        clawMotor             VEX 3-wire module     Left side motor                 *|
 \*----------------------------------------------------------------------------------------------------*/
-
 
 /* Platform - do not modify */
 #pragma platform(VEX2)
