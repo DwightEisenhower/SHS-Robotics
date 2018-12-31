@@ -9,13 +9,13 @@
  * Ie Brain.ThreeWirePort.A
  */
 
-
+/**SPINNER AND REVERSAL CODE START*/
 /* Define global variables because why not */
 bool spinnerOn = false;
 
 /* Messages */
 const char* reverseMessageOn = "Motors are REVERSED";
-const char* reverseMessageOff = "Motors are NORMAL";
+const char* reverseMessageOff = "Motors are NORMAL  ";
 const char* rumbleCode = ".-";
 
 /**
@@ -30,6 +30,8 @@ bool reversed = false; // Are all motors reversed?
 const int MAX_REVERSE_TIMEOUT = 7; // Max iterations before state can be changed
 int reversedTimeout = 0; // Min timeout between motor reversals
 
+/**SPINNER AND REVERSAL VARIABLES END*/
+
 /**
  * Stores all direction types. Use this instead of 
  * vex::directionType if you want the motor to be 
@@ -40,21 +42,30 @@ int reversedTimeout = 0; // Min timeout between motor reversals
 struct directionsStruct {
     vex::directionType fwd;
     vex::directionType rev;
+} directions;
 
- Motor.spin(directionType::fwd,50,velocityUnits} directions;
+motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
+motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
+const int NUM_MOTORS = 3; // per side
 
-void arcadedrive {
-    
-    const leftpower = Controller1.Axis1.position(percentUnits::pct)+Controller1.Axis2.position(percentUnits::pct);
-    const rightpower = Controller1.Axis1.position(percentUnits::pct)-Controller1.Axis2.position(percentUnits::pct);
-        Controller1.Screen.print(leftpower);
-        Controller1.Screen.print(rightpower);
-            Motor04dr.spin(dir, leftpower, vex::velocityUnits::pct);
-            Motor16dr.spin(dir, leftpower, vex::velocityUnits::pct);
-            Motor02dr.spin(dir, leftpower, vex::velocityUnits::pct);
-            Motor11dl.spin(dir, rightpower, vex::velocityUnits::pct);
-            Motor03dl.spin(dir, rightpower, vex::velocityUnits::pct);
-            Motor01dl.spin(dir, rightpower, vex::velocityUnits::pct);
+void arcadedrive(bool reversed) {
+    int px = Controller1.Axis1.position(percentUnits::pct);
+    int py = Controller1.Axis2.position(percentUnits::pct);
+    if (reversed) {
+        py *= -1;
+    }
+    int lp = py + px;
+    int rp = py - px;
+
+    Controller1.Screen.setCursor(2, 0);
+    Controller1.Screen.print("Lrpm = %4d%%", lp);
+    Controller1.Screen.setCursor(3, 0);
+    Controller1.Screen.print("Rrpm = %4d%%", rp);
+
+    for (int i = 0; i < NUM_MOTORS; i++) {
+        lmotors[i].spin(vex::directionType::fwd, lp, percentUnits::pct);
+        rmotors[i].spin(vex::directionType::fwd, rp, percentUnits::pct);
+    }
 }
 
 /**
@@ -62,13 +73,13 @@ void arcadedrive {
  * of the robot. Pls refactor.
  */
 void Spinner() {
-    if (Controller1.ButtonY.pressing()) {
+    if (Controller1.ButtonX.pressing()) {
         spinnerOn = !spinnerOn;
     }
     if (spinnerOn) {
-        Motor07.spin(vex::directionType::fwd, 100, vex::velocityUnits::pct);
+        Motor05sp.spin(directionType::fwd,600,velocityUnits::rpm);
     } else {
-        Motor07.stop();
+        Motor05sp.stop();
     }
 }
 
@@ -85,30 +96,13 @@ int main() {
             reversedTimeout = MAX_REVERSE_TIMEOUT;
             
             /* Display the current reversal state */
-            Controller1.Screen.clearScreen();
+            Controller1.Screen.setCursor(1, 0)   ;
             Controller1.Screen.print(reversed ? reverseMessageOn : reverseMessageOff);
             Controller1.rumble(rumbleCode);
         }
-        
-        directions.fwd = !reversed ? vex::directionType::fwd : vex::directionType::rev;
-        directions.rev = !reversed ? vex::directionType::rev : vex::directionType::fwd;
-
         // Spinny thing code
-        doSpinner();
+        Spinner();
         // Drive code
-        doarcadedrive();
+        arcadedrive(reversed);
+    }
 }
-
-
-
-void moveStraight (int power=100, bool fwd=true) {
-    vex::directionType dir = fwd ? directions.fwd : directions.rev;
-    
-    Motor01.spin(dir, power, vex::velocityUnits::pct);
-    Motor02.spin(dir, power, vex::velocityUnits::pct);
-    Motor05.spin(dir, power, vex::velocityUnits::pct);
-    Motor03.spin(dir, power, vex::velocityUnits::pct);
-    Motor04.spin(dir, power, vex::velocityUnits::pct);
-    Motor16.spin(dir, power, vex::velocityUnits::pct);
-}
-
