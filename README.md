@@ -1,6 +1,6 @@
 # SHS-Robotics
 
-Robotics code for SHS Robotics Club
+Robot code for club
 
 # Commit Instructions
 
