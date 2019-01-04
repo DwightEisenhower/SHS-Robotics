@@ -63,20 +63,38 @@ const int MAX_MOTOR_VAL = 127;
 const float MAX_JOY_VAL = 127.0;
 //const float SQRT2 = sqrt(2);
 
-float scale_joystick(int input)
-{
-	float result = 0.;
-	if (input > DEADZONE)
-	{
-		result = (input - DEADZONE) / (MAX_JOY_VAL - DEADZONE);
-		result *= result;  // fine control, optional
-	}
-	else if (input < -DEADZONE)
-	{
-		result = (input + DEADZONE) / (MAX_JOY_VAL - DEADZONE);
-		result *= -result;  // fine control, optional
-	}
-	return result;
+/**
+ * Scales a joystick input value (-127 to 127) to a float 
+ * between -1 and 1, representing percent motor output.
+ * (Negative being reversed). Quadratically scales.
+ */
+float scaleJoystick(int input) {
+    float result = 0;
+
+    /* Input exceeds threshold to function */
+    if (abs(input) > DEADZONE) {
+        /* Determine a ratio of the input to the x value range 
+         * that joystick inputs can have. This ignores the DEADZONE,
+         * for example, if my input was 20, graphed on an x-axis, it
+         * would look like
+         *                         |---------B--------|
+         *                     |-C-|-A-|
+         * -127 -------------- 0 ---- 20 ---------- 127
+         * 
+         * The expression below calculates the ratio of A to B, where
+         * C is the deadzone (not included). */
+        result = (input - DEADZONE) / (MAX_JOY_VAL - DEADZONE);
+
+        /* Quadratically scale the result, making lower input 
+         * values grow more slowly than higher ones. At max joystick 
+         * input (127) result should be equal to 1, giving max motor
+         * strength */
+        result *= result;
+
+        /* If input was initially negative make output negative */
+        if (input < 0)
+            result *= -1;
+    } 
 }
 
 //float rescale_squares(alpha)
