@@ -30,8 +30,6 @@ bool reversed = false; // Are all motors reversed?
 const int MAX_REVERSE_TIMEOUT = 7; // Max iterations before state can be changed
 int reversedTimeout = 0; // Min timeout between motor reversals
 
-/**SPINNER AND REVERSAL VARIABLES END*/
-
 /**
  * Stores all direction types. Use this instead of 
  * vex::directionType if you want the motor to be 
@@ -43,6 +41,9 @@ struct directionsStruct {
     vex::directionType fwd;
     vex::directionType rev;
 } directions;
+
+/**SPINNER AND REVERSAL VARIABLES END*/
+
 
 motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
 motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
@@ -72,7 +73,7 @@ void arcadedrive(bool reversed) {
  * Deal with the spinner thing at the front 
  * of the robot. Pls refactor.
  */
-void Spinner() {
+void spinner() {
     if (Controller1.ButtonX.pressing()) {
         spinnerOn = !spinnerOn;
     }
@@ -101,7 +102,7 @@ int main() {
             Controller1.rumble(rumbleCode);
         }
         // Spinny thing code
-        Spinner();
+        spinner();
         // Drive code
         arcadedrive(reversed);
     }

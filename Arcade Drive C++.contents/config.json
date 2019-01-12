@@ -1,5 +1,5 @@
 {
-    "competition": false,
+    "competition": true,
     "components": [
         {
             "class": "vex::controller",
@@ -93,7 +93,7 @@
             "type": "motor"
         }
     ],
-    "description": "C++ Test program to drive te tank",
+    "description": "C++ Test program to drive the tank",
     "device": {
         "slot": 2,
         "type": "vexV5"
