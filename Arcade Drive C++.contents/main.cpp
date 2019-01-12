@@ -18,6 +18,11 @@ const char* reverseMessageOn = "Motors are REVERSED";
 const char* reverseMessageOff = "Motors are NORMAL  ";
 const char* rumbleCode = ".-";
 
+/* Controller screen lines, if 0, do not print */
+const int JOYSTICK_LINE = 1;
+const int MOTOR_LINE = 2;
+const int SPINNER_LINE = 3;
+
 /**
  * Reversing of motors. If reversed is true then
  * directions.fwd and directions.rev will be the opposite of
@@ -40,27 +45,27 @@ struct directionsStruct {
 /**SPINNER AND REVERSAL VARIABLES END*/
 
 /* Joystick rescaling - quadratic outside the dead zone */
-const int DEADZONE = 10;
-const double MAX_JOY_VAL = 127.0;  // need this double for division below
+const int DEADZONE = 0.05;
+const double JOY_SCALE = 127.0;
 
 double scale_joystick(double input)
 {
-	double result = 0.;
+	double result;
 	if (input > DEADZONE)
 	{
-		result = (input - DEADZONE) / (MAX_JOY_VAL - DEADZONE);
+		result = (input - DEADZONE) / (1.0 - DEADZONE);
 		result *= result;  // fine control, optional
 	}
 	else if (input < -DEADZONE)
 	{
-		result = (input + DEADZONE) / (MAX_JOY_VAL - DEADZONE);
+		result = (input + DEADZONE) / (1.0 - DEADZONE);
 		result *= -result;  // fine control, optional
 	}
     else 
     {
-        return 0;
+        return 0.;
     }
-	return result / input;
+	return result;
 }
 
 
@@ -71,25 +76,26 @@ const int NUM_MOTORS = 3; // per side
 void arcadedrive() {
     double px = Controller1.Axis1.value();  //Gets the value of the joystick axis on a scale from -127 to 127.
     double py = Controller1.Axis2.value();
-
-    // Print joystick values for information
-    Controller1.Screen.setCursor(2, 0);
-    Controller1.Screen.print("Xjoy = %5.1f ", px);
-    Controller1.Screen.setCursor(3, 0);
-    Controller1.Screen.print("Yjoy = %5.1f ", py);
         
+    double d = sqrt(px*px + py*py) / JOY_SCALE;
+    double scale = scale_joystick(d);
+    
+    if (JOYSTICK_LINE > 0) {
+        // Print joystick values for information
+        Controller1.Screen.setCursor(JOYSTICK_LINE, 0);
+        Controller1.Screen.print("J: %4.0f %4.0f * %3.2f %s", 
+                                 py, px, scale, (reversed ? "R" : " "));
+    }
+    
     if (reversed) {
         py *= -1;
     }
     
-    double d = sqrt(px*px + py*py);
-    double scale = scale_joystick(d);
-    
-    px *= scale;
-    py *= scale;
+    px *= scale / JOY_SCALE;  // fraction 0 to 1
+    py *= scale / JOY_SCALE;
 
-    double lp = py + px;
-    double rp = py - px;
+    double lp = 100 * (py + px);  // in percent
+    double rp = 100 * (py - px);
 
 //    Controller1.Screen.setCursor(2, 0);
 //    Controller1.Screen.print("Lrpm = %5.1f%%", lp);
@@ -100,6 +106,14 @@ void arcadedrive() {
         lmotors[i].spin(vex::directionType::fwd, lp, percentUnits::pct);
         rmotors[i].spin(vex::directionType::fwd, rp, percentUnits::pct);
     }
+
+    if (MOTOR_LINE > 0) {
+        // Print motor values for information
+        Controller1.Screen.setCursor(MOTOR_LINE, 0);
+        Controller1.Screen.print("M: %6.1f%% %6.1f%%", lp, rp);
+    }
+
+
 }
 
 /**
@@ -109,14 +123,21 @@ void arcadedrive() {
 
 static double spinner_rpm = 600.;
 
+void print_spin() {
+    if (SPINNER_LINE <= 0) return;  // do nothing
+    Controller1.Screen.setCursor(SPINNER_LINE, 0);
+    Controller1.Screen.print("S: %s rpm %5.0f", (spinnerOn ? "ON ": "OFF"), spinner_rpm); 
+}
+
 void set_spin() {
     if (spinnerOn) {
         Motor05sp.spin(directionType::fwd, spinner_rpm, velocityUnits::rpm);
     } else {
         Motor05sp.stop();
     }
-    Controller1.Screen.
+    print_spin();
 }
+
 
 void spinner_toggle() {
     spinnerOn = !spinnerOn;
