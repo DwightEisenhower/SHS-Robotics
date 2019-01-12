@@ -8,3 +8,4 @@ vex::motor Motor16dr (vex::PORT12, vex::gearSetting::ratio18_1,true);
 vex::motor Motor02dr (vex::PORT13, vex::gearSetting::ratio18_1,true);
 vex::motor Motor05sp (vex::PORT14, vex::gearSetting::ratio6_1,false);
 vex::controller Controller1;
+vex::competition Competition;

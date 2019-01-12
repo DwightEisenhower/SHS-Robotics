@@ -22,13 +22,8 @@ const char* rumbleCode = ".-";
  * Reversing of motors. If reversed is true then
  * directions.fwd and directions.rev will be the opposite of
  * what they're intended to do (Ie directions.fwd = vex::directionType::rev)
- *
- * Upon changing the state of reversed, the reversedTimeout will be incremented
- * to REVERSE_TIMEOUT and decrease to 0 each iteration of the loop.
  */
 bool reversed = false; // Are all motors reversed?
-const int MAX_REVERSE_TIMEOUT = 7; // Max iterations before state can be changed
-int reversedTimeout = 0; // Min timeout between motor reversals
 
 /**
  * Stores all direction types. Use this instead of 
@@ -44,24 +39,62 @@ struct directionsStruct {
 
 /**SPINNER AND REVERSAL VARIABLES END*/
 
+/* Joystick rescaling - quadratic outside the dead zone */
+const int DEADZONE = 10;
+const double MAX_JOY_VAL = 127.0;  // need this double for division below
+
+double scale_joystick(double input)
+{
+	double result = 0.;
+	if (input > DEADZONE)
+	{
+		result = (input - DEADZONE) / (MAX_JOY_VAL - DEADZONE);
+		result *= result;  // fine control, optional
+	}
+	else if (input < -DEADZONE)
+	{
+		result = (input + DEADZONE) / (MAX_JOY_VAL - DEADZONE);
+		result *= -result;  // fine control, optional
+	}
+    else 
+    {
+        return 0;
+    }
+	return result / input;
+}
+
 
 motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
 motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
 const int NUM_MOTORS = 3; // per side
 
-void arcadedrive(bool reversed) {
-    int px = Controller1.Axis1.position(percentUnits::pct);
-    int py = Controller1.Axis2.position(percentUnits::pct);
+void arcadedrive() {
+    double px = Controller1.Axis1.value();  //Gets the value of the joystick axis on a scale from -127 to 127.
+    double py = Controller1.Axis2.value();
+
+    // Print joystick values for information
+    Controller1.Screen.setCursor(2, 0);
+    Controller1.Screen.print("Xjoy = %5.1f ", px);
+    Controller1.Screen.setCursor(3, 0);
+    Controller1.Screen.print("Yjoy = %5.1f ", py);
+        
     if (reversed) {
         py *= -1;
     }
-    int lp = py + px;
-    int rp = py - px;
+    
+    double d = sqrt(px*px + py*py);
+    double scale = scale_joystick(d);
+    
+    px *= scale;
+    py *= scale;
 
-    Controller1.Screen.setCursor(2, 0);
-    Controller1.Screen.print("Lrpm = %4d%%", lp);
-    Controller1.Screen.setCursor(3, 0);
-    Controller1.Screen.print("Rrpm = %4d%%", rp);
+    double lp = py + px;
+    double rp = py - px;
+
+//    Controller1.Screen.setCursor(2, 0);
+//    Controller1.Screen.print("Lrpm = %5.1f%%", lp);
+//    Controller1.Screen.setCursor(3, 0);
+//    Controller1.Screen.print("Rrpm = %5.1f%%", rp);
 
     for (int i = 0; i < NUM_MOTORS; i++) {
         lmotors[i].spin(vex::directionType::fwd, lp, percentUnits::pct);
@@ -73,37 +106,46 @@ void arcadedrive(bool reversed) {
  * Deal with the spinner thing at the front 
  * of the robot. Pls refactor.
  */
-void spinner() {
-    if (Controller1.ButtonX.pressing()) {
-        spinnerOn = !spinnerOn;
-    }
+
+static double spinner_rpm = 600.;
+
+void set_spin() {
     if (spinnerOn) {
-        Motor05sp.spin(directionType::fwd,600,velocityUnits::rpm);
+        Motor05sp.spin(directionType::fwd, spinner_rpm, velocityUnits::rpm);
     } else {
         Motor05sp.stop();
     }
+    Controller1.Screen.
+}
+
+void spinner_toggle() {
+    spinnerOn = !spinnerOn;
+    set_spin();
+}
+
+void spinner_rpm_up() {
+    spinner_rpm *= 1.1;
+    set_spin();
+}
+
+void spinner_rpm_down() {
+    spinner_rpm /= 1.1;
+    set_spin();
+}
+
+void reverse_toggle() {
+    reversed = !reversed;   
 }
 
 int main() {
+    // Set up action button bindings to functions
+    Controller1.ButtonX.pressed(spinner_toggle);
+    Controller1.ButtonUp.pressed(spinner_rpm_up);
+    Controller1.ButtonDown.pressed(spinner_rpm_down);        
+    Controller1.ButtonB.pressed(reverse_toggle);
+    
     while(true) {
-        /**
-         * Checking of motor reversal code. If the B button
-         * is pressed all motors will be toggled to reverse
-         * direction
-         */
-        reversedTimeout = reversedTimeout < 0 ? 0 : reversedTimeout - 1;
-        if(Controller1.ButtonB.pressing() && reversedTimeout <= 0) {
-            reversed = !reversed;
-            reversedTimeout = MAX_REVERSE_TIMEOUT;
-            
-            /* Display the current reversal state */
-            Controller1.Screen.setCursor(1, 0)   ;
-            Controller1.Screen.print(reversed ? reverseMessageOn : reverseMessageOff);
-            Controller1.rumble(rumbleCode);
-        }
-        // Spinny thing code
-        spinner();
         // Drive code
-        arcadedrive(reversed);
+        arcadedrive();
     }
 }
