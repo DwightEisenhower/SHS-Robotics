@@ -76,7 +76,7 @@ void arcadedrive() {
     double scale = scale_joystick(d);  // rescale that distance
     
     if (JOYSTICK_LINE > 0) {
-        // Print joystick values for information
+        // Print joystick and scaling values for information
         Controller1.Screen.setCursor(JOYSTICK_LINE, 0);
         Controller1.Screen.print("J %4.0f %4.0f %s %3.2f", 
                                  py, px, (reversed ? "R" : " "), scale);
@@ -94,16 +94,10 @@ void arcadedrive() {
     double rp = py - px;
 
     // if |motor power| > 1, rescale them both 
-    double alp = fabs(lp);
-    if (alp > 1.0){
-        lp /= alp;
-        rp /= alp;
-    }
-
-    double arp = fabs(rp);
-    if (arp > 1.0){
-        lp /= arp;
-        rp /= arp;
+    double mapow = fmax(fabs(lp), fabs(rp));
+    if (mapow > 1.0) {
+        lp /= mapow;
+        rp /= mapow;
     }
     
     lp *= 100; // turn into percent, for motor input
@@ -125,7 +119,7 @@ void arcadedrive() {
 
 /**
  * Deal with the spinner thing at the front 
- * of the robot. Pls refactor.
+ * of the robot.
  */
 
 static double spinner_rpm = 600.;
