@@ -90,7 +90,7 @@ void arcadedrive() {
     py *= scale / JOY_SCALE;
 
     // tentative left/right motor power
-    double lp = py + px;  // from 0 to ~ 2
+    double lp = py + px;  // from 0 to ~2
     double rp = py - px;
 
     // if |motor power| > 1, rescale them both 
