@@ -52,6 +52,22 @@ void smooth_power_down() {
     smooth_power /= smooth_power_mult;
 }
 
+// Whether to print drive info on controller screen
+// (A lot of printing may strain the communication link, so turn it off in competition.)
+static bool print_info = false;
+
+void toggle_print_info(){
+    print_info = !print_info;
+    if (!print_info) {
+        // turned off; clear stale info
+        if (JOYSTICK_LINE > 0) Controller1.Screen.clearLine(JOYSTICK_LINE);
+        if (MOTOR_LINE > 0) Controller1.Screen.clearLine(MOTOR_LINE);
+    }
+}
+
+
+// Drive code
+
 motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
 motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
 const int NUM_MOTORS = 3; // per side
@@ -63,7 +79,7 @@ void arcadedrive() {
     double d = sqrt(px*px + py*py) / JOY_SCALE; // distance from the origin, 0 to ~ 1
     double scale = scale_joystick(d);  // rescale that distance
     
-    if (JOYSTICK_LINE > 0) {
+    if (print_info && JOYSTICK_LINE > 0) {
         // Print joystick and scaling values for information
         Controller1.Screen.setCursor(JOYSTICK_LINE, 0);
         Controller1.Screen.print("J %4.0f %4.0f %s %3.2f", 
@@ -96,7 +112,7 @@ void arcadedrive() {
         rmotors[i].spin(vex::directionType::fwd, rp, percentUnits::pct);
     }
 
-    if (MOTOR_LINE > 0) {
+    if (print_info && MOTOR_LINE > 0) {
         // Print motor values for information
         Controller1.Screen.setCursor(MOTOR_LINE, 0);
         Controller1.Screen.print("M: %6.1f%% %6.1f%%", lp, rp);
@@ -151,6 +167,7 @@ int main() {
     Controller1.ButtonB.pressed(reverse_toggle);
     Controller1.ButtonRight.pressed(smooth_power_up);
     Controller1.ButtonLeft.pressed(smooth_power_down);
+    Controller1.ButtonY.pressed(toggle_print_info);
     
     
     while(true) {
