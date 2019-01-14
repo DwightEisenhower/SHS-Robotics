@@ -48,6 +48,7 @@ struct directionsStruct {
 const double DEADZONE = 0.02;
 const double JOY_SCALE = 127.0;
 static double smooth_power = 0.5;
+const double smooth_power_mult = 1.05;
 
 double scale_joystick(double input)  // input positive between 0 and ~ 1
 {
@@ -63,6 +64,13 @@ double scale_joystick(double input)  // input positive between 0 and ~ 1
 	return result;
 }
 
+void smooth_power_up() {
+    smooth_power *= smooth_power_mult;
+}
+
+void smooth_power_down() {
+    smooth_power /= smooth_power_mult;
+}
 
 motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
 motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
@@ -123,6 +131,7 @@ void arcadedrive() {
  */
 
 static double spinner_rpm = 600.;
+const double spinner_rpm_mult = 1.05; 
 
 void print_spin() {
     if (SPINNER_LINE <= 0) return;  // do nothing
@@ -146,12 +155,12 @@ void spinner_toggle() {
 }
 
 void spinner_rpm_up() {
-    spinner_rpm *= 1.1;
+    spinner_rpm *= spinner_rpm_mult;
     set_spin();
 }
 
 void spinner_rpm_down() {
-    spinner_rpm /= 1.1;
+    spinner_rpm /= spinner_rpm_mult;
     set_spin();
 }
 
@@ -166,6 +175,9 @@ int main() {
     Controller1.ButtonUp.pressed(spinner_rpm_up);
     Controller1.ButtonDown.pressed(spinner_rpm_down);        
     Controller1.ButtonB.pressed(reverse_toggle);
+    Controller1.ButtonRight.pressed(smooth_power_up);
+    Controller1.ButtonLeft.pressed(smooth_power_down);
+    
     
     while(true) {
         // Drive code
