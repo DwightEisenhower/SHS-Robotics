@@ -9,41 +9,22 @@
  * Ie Brain.ThreeWirePort.A
  */
 
-/** REVERSAL CODE START*/
-/* Define global variables because why not */
-
-/* Messages */
-const char* reverseMessageOn = "Motors are REVERSED";
-const char* reverseMessageOff = "Motors are NORMAL  ";
-const char* rumbleCode = ".-";
-
 /* Controller screen lines, if 0, do not print */
 const int JOYSTICK_LINE = 1;
 const int MOTOR_LINE = 2;
 const int SPINNER_LINE = 3;
 
 /**
- * Reversing of motors. If reversed is true then
- * directions.fwd and directions.rev will be the opposite of
- * what they're intended to do (Ie directions.fwd = vex::directionType::rev)
+ * Reversing of motors. If reversed is true then front and back of the robot are reversed.
  */
-bool reversed = false; // Are all motors reversed?
+static bool reversed = false; // Are all motors reversed?
 
-/**
- * Stores all direction types. Use this instead of 
- * vex::directionType if you want the motor to be 
- * reversed by the reversed variable 
- *
- * Ie. Do directions.fwd instead of vex::directionType::fwd
- */
-struct directionsStruct {
-    vex::directionType fwd;
-    vex::directionType rev;
-} directions;
+void reverse_toggle() {
+    reversed = !reversed;
+    Controller1.rumble(".=");
+}
 
-/**SPINNER AND REVERSAL VARIABLES END*/
-
-/* Joystick rescaling - quadratic outside the dead zone */
+/* Joystick rescaling - input^(1+smooth_power) outside the dead zone */
 const double DEADZONE = 0.02;
 const double JOY_SCALE = 127.0;
 static double smooth_power = 0.5;
@@ -51,7 +32,7 @@ const double smooth_power_mult = 1.05;
 
 double scale_joystick(double input)  // input positive between 0 and ~ 1
 {
-    // result ~= result^(1+smoot_hpower), modulo dead zone
+    // result ~= input^(1+smooth_power), modulo dead zone
 	double result;
 	if (input > DEADZONE) {
 		result = fmin((input - DEADZONE) / (1.0 - DEADZONE), 1.0);
@@ -123,32 +104,29 @@ void arcadedrive() {
 }
 
 /**
- * Deal with the spinner thing at the front 
- * of the robot.
+ * Deal with the spinner at the front of the robot.
  */
 // Spinner states 0 - stopped; 1 - forward; 2 - stopped; 3 - reversed;
 // States sycle 0-1-2-3-4-0-... with button press.
-int spinner_state = 0;
-
+static int spinner_state = 0;
 static double spinner_rpm = 600.;
 const double spinner_rpm_mult = 1.05; 
 
 void print_spin() {
     if (SPINNER_LINE <= 0) return;  // do nothing
     Controller1.Screen.setCursor(SPINNER_LINE, 0);
-    Controller1.Screen.print("S: %s rpm %5.0f", (spinner_state % 2 == 0 ? "OFF": 
-                                                    (spinner_state == 1 ? "FWD" : "REV")), spinner_rpm); 
+    Controller1.Screen.print("S: %s rpm %5.0f", (spinner_state % 2 == 0 ? "OFF": (spinner_state == 1 ? "FWD" : "REV")),
+                                                 spinner_rpm); 
 }
 
 void set_spin() {
-    if (spinner_state % 2 == 0) {
+    if (spinner_state % 2 == 0) { // states 0 and 2
         Motor05sp.stop();        
     } else {
         Motor05sp.spin((spinner_state == 1 ? directionType::fwd : directionType::rev), spinner_rpm, velocityUnits::rpm);
     }
     print_spin();
 }
-
 
 void spinner_toggle() {
     ++spinner_state %= 4;  // same as spinner_state = (spinner_state + 1) % 4;
@@ -163,11 +141,6 @@ void spinner_rpm_up() {
 void spinner_rpm_down() {
     spinner_rpm /= spinner_rpm_mult;
     set_spin();
-}
-
-void reverse_toggle() {
-    reversed = !reversed;
-    Controller1.rumble(rumbleCode);
 }
 
 int main() {
