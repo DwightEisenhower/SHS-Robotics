@@ -9,9 +9,8 @@
  * Ie Brain.ThreeWirePort.A
  */
 
-/**SPINNER AND REVERSAL CODE START*/
+/** REVERSAL CODE START*/
 /* Define global variables because why not */
-bool spinnerOn = false;
 
 /* Messages */
 const char* reverseMessageOn = "Motors are REVERSED";
@@ -121,14 +120,15 @@ void arcadedrive() {
         Controller1.Screen.setCursor(MOTOR_LINE, 0);
         Controller1.Screen.print("M: %6.1f%% %6.1f%%", lp, rp);
     }
-
-
 }
 
 /**
  * Deal with the spinner thing at the front 
  * of the robot.
  */
+// Spinner states 0 - stopped; 1 - forward; 2 - stopped; 3 - reversed;
+// States sycle 0-1-2-3-4-0-... with button press.
+int spinner_state = 0;
 
 static double spinner_rpm = 600.;
 const double spinner_rpm_mult = 1.05; 
@@ -136,21 +136,22 @@ const double spinner_rpm_mult = 1.05;
 void print_spin() {
     if (SPINNER_LINE <= 0) return;  // do nothing
     Controller1.Screen.setCursor(SPINNER_LINE, 0);
-    Controller1.Screen.print("S: %s rpm %5.0f", (spinnerOn ? "ON ": "OFF"), spinner_rpm); 
+    Controller1.Screen.print("S: %s rpm %5.0f", (spinner_state % 2 == 0 ? "OFF": 
+                                                    (spinner_state == 1 ? "FWD" : "REV")), spinner_rpm); 
 }
 
 void set_spin() {
-    if (spinnerOn) {
-        Motor05sp.spin(directionType::fwd, spinner_rpm, velocityUnits::rpm);
+    if (spinner_state % 2 == 0) {
+        Motor05sp.stop();        
     } else {
-        Motor05sp.stop();
+        Motor05sp.spin((spinner_state == 1 ? directionType::fwd : directionType::rev), spinner_rpm, velocityUnits::rpm);
     }
     print_spin();
 }
 
 
 void spinner_toggle() {
-    spinnerOn = !spinnerOn;
+    ++spinner_state %= 4;  // same as spinner_state = (spinner_state + 1) % 4;
     set_spin();
 }
 
