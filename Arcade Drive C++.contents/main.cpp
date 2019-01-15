@@ -18,7 +18,9 @@ const int SPINNER_LINE = 3;
 const double DEADZONE = 0.02;
 const double JOY_SCALE = 127.0;
 static double smooth_power = 0.5;
-const double smooth_power_mult = 1.05;
+const double smooth_power_step = 0.05;
+const double MAX_SMOOTH_POWER = 1.0;
+const double MIN_SMOOTH_POWER = -0.75;
 
 double scale_joystick(double input)  // input positive between 0 and ~ 1
 {
@@ -35,11 +37,13 @@ double scale_joystick(double input)  // input positive between 0 and ~ 1
 }
 
 void smooth_power_up() {
-    smooth_power *= smooth_power_mult;
+    smooth_power += smooth_power_step;
+    smooth_power = fmin(smooth_power, MAX_SMOOTH_POWER);
 }
 
 void smooth_power_down() {
-    smooth_power /= smooth_power_mult;
+    smooth_power -= smooth_power_step;
+    smooth_power = fmax(smooth_power, MIN_SMOOTH_POWER);
 }
 
 // Whether to print drive info on controller screen
