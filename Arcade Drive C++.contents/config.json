@@ -16,7 +16,7 @@
             },
             "left": 389,
             "name": "Motor05sp",
-            "port": "14",
+            "port": "11",
             "top": 0,
             "type": "motor"
         },
@@ -28,7 +28,7 @@
             },
             "left": 36,
             "name": "Motor03dl",
-            "port": "3",
+            "port": "20",
             "top": 204,
             "type": "motor"
         },
@@ -40,7 +40,7 @@
             },
             "left": 171,
             "name": "Motor01dl",
-            "port": "2",
+            "port": "9",
             "top": 288,
             "type": "motor"
         },
@@ -52,7 +52,7 @@
             },
             "left": 405,
             "name": "Motor02dr",
-            "port": "13",
+            "port": "12",
             "top": 152,
             "type": "motor"
         },
@@ -64,7 +64,7 @@
             },
             "left": 707,
             "name": "Motor04dr",
-            "port": "11",
+            "port": "1",
             "top": 362,
             "type": "motor"
         },
@@ -76,7 +76,7 @@
             },
             "left": 537,
             "name": "Motor16dr",
-            "port": "12",
+            "port": "2",
             "top": 279,
             "type": "motor"
         },
@@ -88,7 +88,7 @@
             },
             "left": 330,
             "name": "Motor11dl",
-            "port": "1",
+            "port": "10",
             "top": 379,
             "type": "motor"
         }
