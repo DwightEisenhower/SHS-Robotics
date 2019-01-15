@@ -58,6 +58,10 @@ void toggle_print_info(){
 
 // Drive code
 
+// Current left/right motor power
+static double cur_lp = 0.;
+static double cur_rp = 0.;
+
 motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
 motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
 const int NUM_MOTORS = 3; // per side
@@ -70,8 +74,8 @@ static bool reversed = false; // Are all motors reversed?
 void reverse_toggle() {
     reversed = !reversed;
     for (int i = 0; i < NUM_MOTORS; i++) {
-        lmotors[i].stop(brakeType::hold);
-        rmotors[i].stop(brakeType::hold);
+        lmotors[i].stop(brakeType::coast);
+        rmotors[i].stop(brakeType::coast);
     }
     Controller1.rumble(".=");
 }
@@ -87,8 +91,7 @@ void arcadedrive() {
     if (print_info && JOYSTICK_LINE > 0) {
         // Print joystick and scaling values for information
         Controller1.Screen.setCursor(JOYSTICK_LINE, 0);
-        Controller1.Screen.print("J %4.0f %4.0f %s %3.2f", 
-                                 py, px, (reversed ? "R" : " "), scale);
+        Controller1.Screen.print("J %4.0f %4.0f %3.2f", py, px, smooth_power);
     }
     
     if (reversed) {
@@ -111,17 +114,21 @@ void arcadedrive() {
     
     lp *= 100; // turn into percent, for motor input
     rp *= 100;
-
-    for (int i = 0; i < NUM_MOTORS; i++) {
-        lmotors[i].spin(vex::directionType::fwd, lp, percentUnits::pct);
-        rmotors[i].spin(vex::directionType::fwd, rp, percentUnits::pct);
+    
+    if (lp != cur_lp || rp != cur_rp) {  //   
+        for (int i = 0; i < NUM_MOTORS; i++) {
+            lmotors[i].spin(vex::directionType::fwd, lp, percentUnits::pct);
+            rmotors[i].spin(vex::directionType::fwd, rp, percentUnits::pct);
+        }
+        cur_lp = lp;
+        cur_rp = rp;
+        if (print_info && MOTOR_LINE > 0) {
+            // Print motor values for information
+            Controller1.Screen.setCursor(MOTOR_LINE, 0);
+            Controller1.Screen.print("M: %s %6.1f%% %6.1f%%", (reversed ? "R" : " "), lp, rp);
+        }
     }
-
-    if (print_info && MOTOR_LINE > 0) {
-        // Print motor values for information
-        Controller1.Screen.setCursor(MOTOR_LINE, 0);
-        Controller1.Screen.print("M: %6.1f%% %6.1f%%", lp, rp);
-    }
+    
 }
 
 /**
@@ -178,5 +185,6 @@ int main() {
     while(true) {
         // Drive code
         arcadedrive();
+        vex::task::sleep(2); //Sleep the task for a short amount of time to prevent wasted resources. 
     }
 }
