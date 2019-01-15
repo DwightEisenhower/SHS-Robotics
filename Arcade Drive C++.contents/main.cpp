@@ -17,7 +17,7 @@ const int SPINNER_LINE = 3;
 /* Joystick rescaling - input^(1+smooth_power) outside the dead zone */
 const double DEADZONE = 0.02;
 const double JOY_SCALE = 127.0;
-static double smooth_power = 0.5;
+static double smooth_power = 0.0;
 const double smooth_power_step = 0.05;
 const double MAX_SMOOTH_POWER = 1.0;
 const double MIN_SMOOTH_POWER = -0.75;
@@ -61,14 +61,42 @@ void toggle_print_info(){
 
 
 // Drive code
+motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
+motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
+const int NUM_MOTORS = 3; // per side
+
+void spin_motors(double lp, double rp) {
+    for (int i = 0; i < NUM_MOTORS; i++) {
+        lmotors[i].spin(vex::directionType::fwd, lp, percentUnits::pct);
+        rmotors[i].spin(vex::directionType::fwd, rp, percentUnits::pct);
+    }    
+}
+
+void stop_motors(brakeType mode) {
+    for (int i = 0; i < NUM_MOTORS; i++) {
+        lmotors[i].stop(mode);
+        rmotors[i].stop(mode);
+    }
+}
+
+// Hold state - overrides other motor controls
+static bool hold_motors = false;
+
+void hold_motors_toggle() {
+    hold_motors = ! hold_motors;
+    if (hold_motors) {
+        stop_motors(brakeType::hold);
+    }
+    if (MOTOR_LINE > 0) {
+        Controller1.Screen.setCursor(MOTOR_LINE, 0);        
+        Controller1.Screen.print("M: %s        ", (hold_motors ?  "HOLD" : "    "));       
+    }
+    Controller1.rumble("..");   
+}
 
 // Current left/right motor power
 static double cur_lp = 0.;
 static double cur_rp = 0.;
-
-motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
-motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
-const int NUM_MOTORS = 3; // per side
 
 /**
  * Reversing of motors. If reversed is true then front and back of the robot are reversed.
@@ -77,15 +105,13 @@ static bool reversed = false; // Are all motors reversed?
 
 void reverse_toggle() {
     reversed = !reversed;
-    for (int i = 0; i < NUM_MOTORS; i++) {
-        lmotors[i].stop(brakeType::coast);
-        rmotors[i].stop(brakeType::coast);
-    }
+    stop_motors(brakeType::coast);
     Controller1.rumble(".=");
 }
 
 
 void arcadedrive() {
+    
     double px = Controller1.Axis1.value();  //Gets the value of the joystick axis on a scale from -127 to 127.
     double py = Controller1.Axis2.value();
         
@@ -95,7 +121,7 @@ void arcadedrive() {
     if (print_info && JOYSTICK_LINE > 0) {
         // Print joystick and scaling values for information
         Controller1.Screen.setCursor(JOYSTICK_LINE, 0);
-        Controller1.Screen.print("J %4.0f %4.0f %3.2f", py, px, smooth_power);
+        Controller1.Screen.print("J %4.0f %4.0f %3.2f   ", py, px, smooth_power);
     }
     
     if (reversed) {
@@ -119,17 +145,14 @@ void arcadedrive() {
     lp *= 100; // turn into percent, for motor input
     rp *= 100;
     
-    if (lp != cur_lp || rp != cur_rp) {  //   
-        for (int i = 0; i < NUM_MOTORS; i++) {
-            lmotors[i].spin(vex::directionType::fwd, lp, percentUnits::pct);
-            rmotors[i].spin(vex::directionType::fwd, rp, percentUnits::pct);
-        }
+    if (!hold_motors && (lp != cur_lp || rp != cur_rp)) {  //   
+        spin_motors(lp, rp);
         cur_lp = lp;
         cur_rp = rp;
         if (print_info && MOTOR_LINE > 0) {
             // Print motor values for information
             Controller1.Screen.setCursor(MOTOR_LINE, 0);
-            Controller1.Screen.print("M: %s %6.1f%% %6.1f%%", (reversed ? "R" : " "), lp, rp);
+            Controller1.Screen.print("M: %s %6.1f%% %6.1f%%   ", (reversed ? "R" : " "), lp, rp);
         }
     }
     
@@ -147,13 +170,13 @@ const double spinner_rpm_mult = 1.05;
 void print_spin() {
     if (SPINNER_LINE <= 0) return;  // do nothing
     Controller1.Screen.setCursor(SPINNER_LINE, 0);
-    Controller1.Screen.print("S: %s rpm %5.0f", (spinner_state % 2 == 0 ? "OFF": (spinner_state == 1 ? "FWD" : "REV")),
-                                                 spinner_rpm); 
+    Controller1.Screen.print("S: %s rpm %5.0f   ", (spinner_state % 2 == 0 ? "OFF": (spinner_state == 1 ? "FWD" : "REV")),
+                                                    spinner_rpm); 
 }
 
 void set_spin() {
     if (spinner_state % 2 == 0) { // states 0 and 2
-        Motor05sp.stop();        
+        Motor05sp.stop(brakeType::coast);        
     } else {
         Motor05sp.spin((spinner_state == 1 ? directionType::fwd : directionType::rev), spinner_rpm, velocityUnits::rpm);
     }
@@ -184,11 +207,11 @@ int main() {
     Controller1.ButtonRight.pressed(smooth_power_up);
     Controller1.ButtonLeft.pressed(smooth_power_down);
     Controller1.ButtonY.pressed(toggle_print_info);
-    
+    Controller1.ButtonA.pressed(hold_motors_toggle);
     
     while(true) {
         // Drive code
         arcadedrive();
-        vex::task::sleep(2); //Sleep the task for a short amount of time to prevent wasted resources. 
+        vex::task::sleep(5); //Sleep the task for a short amount of time to prevent wasted resources. 
     }
 }
