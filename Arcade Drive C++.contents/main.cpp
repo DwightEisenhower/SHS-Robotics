@@ -14,16 +14,6 @@ const int JOYSTICK_LINE = 1;
 const int MOTOR_LINE = 2;
 const int SPINNER_LINE = 3;
 
-/**
- * Reversing of motors. If reversed is true then front and back of the robot are reversed.
- */
-static bool reversed = false; // Are all motors reversed?
-
-void reverse_toggle() {
-    reversed = !reversed;
-    Controller1.rumble(".=");
-}
-
 /* Joystick rescaling - input^(1+smooth_power) outside the dead zone */
 const double DEADZONE = 0.02;
 const double JOY_SCALE = 127.0;
@@ -71,6 +61,21 @@ void toggle_print_info(){
 motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
 motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
 const int NUM_MOTORS = 3; // per side
+
+/**
+ * Reversing of motors. If reversed is true then front and back of the robot are reversed.
+ */
+static bool reversed = false; // Are all motors reversed?
+
+void reverse_toggle() {
+    reversed = !reversed;
+    for (int i = 0; i < NUM_MOTORS; i++) {
+        lmotors[i].stop(brakeType::hold);
+        rmotors[i].stop(brakeType::hold);
+    }
+    Controller1.rumble(".=");
+}
+
 
 void arcadedrive() {
     double px = Controller1.Axis1.value();  //Gets the value of the joystick axis on a scale from -127 to 127.
