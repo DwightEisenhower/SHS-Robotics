@@ -48,7 +48,7 @@ void smooth_power_down() {
 
 // Whether to print drive info on controller screen
 // (A lot of printing may strain the communication link, so turn it off in competition.)
-static bool print_info = false;
+static bool print_info = true;
 
 void toggle_print_info(){
     print_info = !print_info;
@@ -65,6 +65,30 @@ motor lmotors[] {Motor11dl, Motor01dl, Motor03dl};
 motor rmotors[] {Motor04dr, Motor16dr, Motor02dr};
 const int NUM_MOTORS = 3; // per side
 
+/**
+ * Reversing of motors. If reversed is true then front and back of the robot are reversed.
+ */
+static bool reversed = false; // Are all motors reversed?
+
+// Stopping mode for the motors
+// 0 - coast, 1 -brake, 2 - hold
+static int stopping_mode_num = 0;
+const char stopping_mode_char[] = {'C', 'B', 'H'};
+const brakeType stopping_mode[] = {brakeType::coast, brakeType::brake, brakeType::hold};
+
+// Current left/right motor power
+static double cur_lp = 0.;
+static double cur_rp = 0.;
+
+void print_motor_line() {
+    if (print_info && MOTOR_LINE > 0) {
+            // Print motor values for information
+            Controller1.Screen.setCursor(MOTOR_LINE, 0);
+            Controller1.Screen.print("M: %c %c %3.0f%% %3.0f%%     ", (reversed ? 'R' : 'F'), 
+                                     stopping_mode_char[stopping_mode_num], cur_lp, cur_rp);
+        }
+}
+
 void spin_motors(double lp, double rp) {
     for (int i = 0; i < NUM_MOTORS; i++) {
         lmotors[i].spin(vex::directionType::fwd, lp, percentUnits::pct);
@@ -72,26 +96,25 @@ void spin_motors(double lp, double rp) {
     }    
 }
 
-void stop_motors(brakeType mode) {
+void set_stopping_mode_for_motors(brakeType mode) {
     for (int i = 0; i < NUM_MOTORS; i++) {
-        lmotors[i].stop(mode);
-        rmotors[i].stop(mode);
+        lmotors[i].setStopping(mode);
+        rmotors[i].setStopping(mode);
     }
 }
 
-// Current left/right motor power
-static double cur_lp = 0.;
-static double cur_rp = 0.;
-
-/**
- * Reversing of motors. If reversed is true then front and back of the robot are reversed.
- */
-static bool reversed = false; // Are all motors reversed?
-
 void reverse_toggle() {
     reversed = !reversed;
-    stop_motors(brakeType::coast);
+    spin_motors(0., 0.);  // momentarily slow down to 0, so as not be too abrupt 
+    print_motor_line();
     Controller1.rumble(".=");
+}
+
+void stopping_mode_toggle() {
+    ++stopping_mode_num %= 3;  // same as stopping_mode_num = (stopping_mode_num + 1) % 3;
+    set_stopping_mode_for_motors(stopping_mode[stopping_mode_num]);
+    print_motor_line();
+    Controller1.rumble("..");
 }
 
 
@@ -134,11 +157,7 @@ void arcadedrive() {
         spin_motors(lp, rp);
         cur_lp = lp;
         cur_rp = rp;
-        if (print_info && MOTOR_LINE > 0) {
-            // Print motor values for information
-            Controller1.Screen.setCursor(MOTOR_LINE, 0);
-            Controller1.Screen.print("M: %s %6.1f%% %6.1f%%   ", (reversed ? "R" : " "), lp, rp);
-        }
+        print_motor_line();
     }
     
 }
@@ -165,22 +184,24 @@ void set_spin() {
     } else {
         Motor05sp.spin((spinner_state == 1 ? directionType::fwd : directionType::rev), spinner_rpm, velocityUnits::rpm);
     }
-    print_spin();
 }
 
 void spinner_toggle() {
     ++spinner_state %= 4;  // same as spinner_state = (spinner_state + 1) % 4;
     set_spin();
+    print_spin();
 }
 
 void spinner_rpm_up() {
     spinner_rpm *= spinner_rpm_mult;
     set_spin();
+    print_spin();
 }
 
 void spinner_rpm_down() {
     spinner_rpm /= spinner_rpm_mult;
     set_spin();
+    print_spin();
 }
 
 int main() {
@@ -192,6 +213,12 @@ int main() {
     Controller1.ButtonRight.pressed(smooth_power_up);
     Controller1.ButtonLeft.pressed(smooth_power_down);
     Controller1.ButtonY.pressed(toggle_print_info);
+    Controller1.ButtonA.pressed(stopping_mode_toggle);
+    // Set up initial screen
+    Controller1.Screen.clearScreen();
+    print_motor_line();
+    print_spin();
+    
     
     while(true) {
         // Drive code
