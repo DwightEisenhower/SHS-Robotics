@@ -79,21 +79,6 @@ void stop_motors(brakeType mode) {
     }
 }
 
-// Hold state - overrides other motor controls
-static bool hold_motors = false;
-
-void hold_motors_toggle() {
-    hold_motors = ! hold_motors;
-    if (hold_motors) {
-        stop_motors(brakeType::hold);
-    }
-    if (MOTOR_LINE > 0) {
-        Controller1.Screen.setCursor(MOTOR_LINE, 0);        
-        Controller1.Screen.print("M: %s        ", (hold_motors ?  "HOLD" : "    "));       
-    }
-    Controller1.rumble("..");   
-}
-
 // Current left/right motor power
 static double cur_lp = 0.;
 static double cur_rp = 0.;
@@ -145,7 +130,7 @@ void arcadedrive() {
     lp *= 100; // turn into percent, for motor input
     rp *= 100;
     
-    if (!hold_motors && (lp != cur_lp || rp != cur_rp)) {  //   
+    if (lp != cur_lp || rp != cur_rp) {  //   
         spin_motors(lp, rp);
         cur_lp = lp;
         cur_rp = rp;
@@ -207,7 +192,6 @@ int main() {
     Controller1.ButtonRight.pressed(smooth_power_up);
     Controller1.ButtonLeft.pressed(smooth_power_down);
     Controller1.ButtonY.pressed(toggle_print_info);
-    Controller1.ButtonA.pressed(hold_motors_toggle);
     
     while(true) {
         // Drive code
