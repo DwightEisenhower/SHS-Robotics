@@ -17,7 +17,7 @@ const int SPINNER_LINE = 3;
 /* Joystick rescaling - input^(1+smooth_power) outside the dead zone */
 const double DEADZONE = 0.02;
 const double JOY_SCALE = 127.0;
-static double smooth_power = 0.0;
+static double smooth_power = 0.4;
 const double smooth_power_step = 0.05;
 const double MAX_SMOOTH_POWER = 1.0;
 const double MIN_SMOOTH_POWER = -0.75;
@@ -83,7 +83,7 @@ static double cur_rp = 0.;
 void print_motor_line() {
     if (print_info && MOTOR_LINE > 0) {
             // Print motor values for information
-            Controller1.Screen.setCursor(MOTOR_LINE, 0);
+            Controller1.Screen.setCursor(MOTOR_LINE, 1);
             Controller1.Screen.print("M: %c %c %3.0f%% %3.0f%%     ", (reversed ? 'R' : 'F'), 
                                      stopping_mode_char[stopping_mode_num], cur_lp, cur_rp);
         }
@@ -128,7 +128,7 @@ void arcadedrive() {
     
     if (print_info && JOYSTICK_LINE > 0) {
         // Print joystick and scaling values for information
-        Controller1.Screen.setCursor(JOYSTICK_LINE, 0);
+        Controller1.Screen.setCursor(JOYSTICK_LINE, 1);
         Controller1.Screen.print("J %4.0f %4.0f %3.2f   ", py, px, smooth_power);
     }
     
@@ -168,12 +168,12 @@ void arcadedrive() {
 // Spinner states 0 - stopped; 1 - forward; 2 - stopped; 3 - reversed;
 // States sycle 0-1-2-3-4-0-... with button press.
 static int spinner_state = 0;
-static double spinner_rpm = 600.;
+static double spinner_rpm = 500.;
 const double spinner_rpm_mult = 1.05; 
 
 void print_spin() {
     if (SPINNER_LINE <= 0) return;  // do nothing
-    Controller1.Screen.setCursor(SPINNER_LINE, 0);
+    Controller1.Screen.setCursor(SPINNER_LINE, 1);
     Controller1.Screen.print("S: %s rpm %5.0f   ", (spinner_state % 2 == 0 ? "OFF": (spinner_state == 1 ? "FWD" : "REV")),
                                                     spinner_rpm); 
 }
