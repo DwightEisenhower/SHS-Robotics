@@ -1,0 +1,98 @@
+{
+    "components": [
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": true
+            },
+            "left": 555,
+            "name": "LeftMotor3",
+            "port": "10",
+            "top": 377,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": false
+            },
+            "left": 696,
+            "name": "ClawMotor",
+            "port": "9",
+            "top": 186,
+            "type": "motor"
+        },
+        {
+            "class": "vex::controller",
+            "left": 974,
+            "name": "Controller1",
+            "top": 0,
+            "type": "controller"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": false
+            },
+            "left": 507,
+            "name": "LeftMotor1",
+            "port": "20",
+            "top": 53,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": false
+            },
+            "left": 227,
+            "name": "RightMotor",
+            "port": "1",
+            "top": 385,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": false
+            },
+            "left": 343.59999084472656,
+            "name": "RightMotor2",
+            "port": "2",
+            "top": 253,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": false
+            },
+            "left": 403,
+            "name": "RightMotor1",
+            "port": "12",
+            "top": 460,
+            "type": "motor"
+        }
+    ],
+    "description": "This program instructs your robot to use remote control values to move the robot.\n\n[tested version]\n[20180813.17.22]",
+    "device": {
+        "slot": 1,
+        "type": "vexV5"
+    },
+    "files": [
+        "main.cpp",
+        "robot-config.h"
+    ],
+    "icon": "USER000x.bmp",
+    "language": {
+        "name": "vc++"
+    },
+    "title": "Tank Control",
+    "version": "0.0.1"
+}
