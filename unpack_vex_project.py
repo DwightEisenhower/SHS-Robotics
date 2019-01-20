@@ -63,7 +63,7 @@ if __name__ == '__main__':  # script
     parser = argparse.ArgumentParser(description='Unpack contents of the VEX Coding Studio\'s binary project file '
                                                  'and save its component source code files in a directory. '
                                                  'This is useful to simplify tracking of the source code changes.')
-    parser.add_argument('vex_file', metavar='<project_name>.vex', help='VEX project file.')
+    parser.add_argument('vex_files', nargs='+', metavar='<project_name>.vex', help='VEX project file(s).')
     parser.add_argument('--out_dir', help='Output directory, defaults to "<project_name>.contents". '
                                           'If exists, all files in it will be deleted first.')
     parser.add_argument('--log_level', default='WARN', help='Set log level, one of WARN (default), INFO, DEBUG.')
@@ -72,21 +72,23 @@ if __name__ == '__main__':  # script
 
     logging.basicConfig(level=args.log_level)
 
-    vex_file = Path(args.vex_file)
-    if not vex_file.is_file():
-        raise ValueError(f'vex_file {vex_file} does not exist.')
-    if not vex_file.parts[-1].endswith('.vex'):
-        raise ValueError(f'vex_file {vex_file} must end with ".vex".')
+    for vex_file in args.vex_files:
+        vex_file = Path(vex_file)
+        if not vex_file.is_file():
+            raise ValueError(f'vex_file {vex_file} does not exist.')
+        if not vex_file.parts[-1].endswith('.vex'):
+            raise ValueError(f'vex_file {vex_file} must end with ".vex".')
 
-    if not args.out_dir:
-        *vex_dirs, vex_fn = vex_file.parts
-        assert vex_fn.endswith('.vex')
-        out_dir = Path(*vex_dirs, vex_fn[:-4] + '.contents')
-    else:
-        out_dir = args.out_dir
+        if not args.out_dir:
+            *vex_dirs, vex_fn = vex_file.parts
+            assert vex_fn.endswith('.vex')
+            out_dir = Path(*vex_dirs, vex_fn[:-4] + '.contents')
+        else:
+            out_dir = args.out_dir
+            pass
+
+        execute(vex_file, out_dir)
         pass
-
-    execute(vex_file, out_dir)
     pass
 
 
