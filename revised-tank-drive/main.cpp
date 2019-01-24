@@ -341,6 +341,14 @@ void displayCurrentAutonState() {
             Brain.Screen.clearLine();
             Brain.Screen.print("Face robot spinner towards opposite side");
             break;
+		case 5:
+            Brain.Screen.setCursor(1,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("A5 - AUTON disabled");
+            
+            Brain.Screen.setCursor(2,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("Robot will now do nothing");
     }
     Brain.Screen.render();
 }
@@ -349,7 +357,7 @@ void displayCurrentAutonState() {
  * Runs when screen is pressed. Toggles the
  * auton state */
 void screenpressed(void) {
-    autonState = autonState % 4 + 1;
+    autonState = autonState % 5 + 1;
     displayCurrentAutonState();
     
     Brain.Screen.setCursor(3,0);
@@ -391,6 +399,7 @@ void autonomous(void){
                 break;
         case 4: auton34(false);
                 break;
+		case 5: break;
     }
 }
 
