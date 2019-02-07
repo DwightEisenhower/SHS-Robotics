@@ -1,6 +1,5 @@
 #include "robot-config.h"
-#include "debug/debug.h"
-#include "chrono.h"
+
 /* Define additional digital outputs.
  * Follow this format:
  * 
