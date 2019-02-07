@@ -9,7 +9,6 @@
  * Ie Brain.ThreeWirePort.A
  */
 //Creates a competition object that allows access to Competition methods.
-//vex::competition    Competition;
 /* Controller screen lines, if 0, do not print */
 const int JOYSTICK_LINE = 1;
 const int MOTOR_LINE = 2;
@@ -104,32 +103,33 @@ void stopAllMotors(brakeType bt) {
 }
 
 void accelerateMotor(motor m, directionType dir) {
-    pwr = (m.power()/11)*100; //convert into %
+    double pwr = (m.power(powerUnits::watt)/11)*100; //convert into %
     if(pwr < 100) {
         pwr += 10;
     }
-    m.spin(vex::directionType::dir, pwr, percentUnits::pct);
+    m.spin(dir, pwr, percentUnits::pct);
 }
 
 void accelerateAllMotors(bool left, directionType dir) {
     if(left) {
-        for(int i = 0, i < 3; i++) {
+        for(int i = 0; i < 3; i++) {
             accelerateMotor(lmotors[i], dir);
         }
     } else {
-        for(int i = 0, i < 3; i++) {
+        for(int i = 0; i < 3; i++) {
             accelerateMotor(rmotors[i], dir);
         }
     }
 }
 
 double averagePower(bool left){
-    double avg;
+    double avg = 0.0;
     if(left) {
-        avg += ( lmotors[0].power() + lmotors[1].power() + lmotors[2].power() ) / 3;
+        avg += ( lmotors[0].power(powerUnits::watt) + lmotors[1].power(powerUnits::watt) + lmotors[2].power(powerUnits::watt) ) / 3;
     } else {
-        avg += ( lmotors[0].power() + lmotors[1].power() + lmotors[2].power() ) / 3;
+        avg += ( lmotors[0].power(powerUnits::watt) + lmotors[1].power(powerUnits::watt) + lmotors[2].power(powerUnits::watt) ) / 3;
     }
+    return avg;
 }
 
 void GTAdrive() {
@@ -157,7 +157,7 @@ void GTAdrive() {
         }
         if(right) {
             accelerateAllMotors(false, vex::directionType::rev);
-            vex::tast::sleep(100);
+            vex::task::sleep(100);
         }
     }
     
@@ -166,7 +166,7 @@ void GTAdrive() {
     double average_power = (lpwr + rpwr) / 2;
     
     //Leveling out after a turn
-    if( (fwd || rev) && (!brake && !left && !right && lpwr != rpwr) {
+    if( (fwd || rev) && (!brake && !left && !right && lpwr != rpwr)) {
         spin_motors(average_power, average_power);
     }
     if(brake) {
@@ -223,15 +223,11 @@ void spinner_rpm_down() {
 
 void pre_auton() {
     // Set up action button bindings to functions
-    Controller1.ButtonX.pressed(spinner_toggle);
-    Controller1.ButtonUp.pressed(spinner_rpm_up);
-    Controller1.ButtonDown.pressed(spinner_rpm_down);        
+    Controller1.ButtonX.pressed(spinner_toggle);       
     Controller1.ButtonB.pressed(reverse_toggle);
-    Controller1.ButtonRight.pressed(smooth_power_up);
-    Controller1.ButtonLeft.pressed(smooth_power_down);
     Controller1.ButtonY.pressed(toggle_print_info);
     Controller1.ButtonA.pressed(stopping_mode_toggle);
-    //Controller1.ButtonL1.pressed(autonomous);
+    //Controller1.ButtonL2.pressed(autonomous);
     // Set up initial screen
     Controller1.Screen.clearScreen();
     print_motor_line();
@@ -241,7 +237,7 @@ void pre_auton() {
 void user_control(void){
     while(true) {
         // Drive code
-        arcadedrive();
+        GTAdrive();
         vex::task::sleep(5); //Sleep the task for a short amount of time to prevent wasted resources. 
     }
 }
