@@ -1,0 +1,111 @@
+{
+    "competition": true,
+    "components": [
+        {
+            "class": "vex::controller",
+            "left": 769,
+            "name": "Controller1",
+            "top": 49,
+            "type": "controller"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 600,
+                "reversed": false
+            },
+            "left": 389,
+            "name": "Motor05sp",
+            "port": "11",
+            "top": 0,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": false
+            },
+            "left": 36,
+            "name": "Motor03dl",
+            "port": "20",
+            "top": 204,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": false
+            },
+            "left": 171,
+            "name": "Motor01dl",
+            "port": "9",
+            "top": 288,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": true
+            },
+            "left": 405,
+            "name": "Motor02dr",
+            "port": "12",
+            "top": 152,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": true
+            },
+            "left": 707,
+            "name": "Motor04dr",
+            "port": "1",
+            "top": 362,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": true
+            },
+            "left": 537,
+            "name": "Motor16dr",
+            "port": "2",
+            "top": 279,
+            "type": "motor"
+        },
+        {
+            "class": "vex::motor",
+            "data": {
+                "gears": 200,
+                "reversed": false
+            },
+            "left": 330,
+            "name": "Motor11dl",
+            "port": "10",
+            "top": 379,
+            "type": "motor"
+        }
+    ],
+    "description": "C++ Test program to drive the tank",
+    "device": {
+        "slot": 1,
+        "type": "vexV5"
+    },
+    "files": [
+        "main.cpp",
+        "robot-config.h"
+    ],
+    "icon": "USER000x.bmp",
+    "language": {
+        "name": "vc++"
+    },
+    "title": "Arcade Drive (auton)",
+    "version": "0.0.1"
+}
