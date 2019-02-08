@@ -222,11 +222,20 @@ void spinner_rpm_down() {
 
 
 void pre_auton() {
-    // Set up action button bindings to functions
+    // Set up action button bindings to scoring functions
     Controller1.ButtonX.pressed(spinner_toggle);       
-    Controller1.ButtonB.pressed(reverse_toggle);
+    Controller1.ButtonA.pressed(*reverse_toggle);
     Controller1.ButtonY.pressed(toggle_print_info);
-    Controller1.ButtonA.pressed(stopping_mode_toggle);
+    Controller1.ButtonB.pressed(stopping_mode_toggle);
+    
+    //Set up action button bindings for driving
+    //Controller1.ButtonUp.pressed(*GTAdrive());
+    //Controller1.ButtonDown.pressed(GTAdrive());
+    //Controller1.ButtonLeft.pressed(GTAdrive());
+    //Controller1.ButtonRight.pressed(GTAdrive());
+    //Controller1.ButtonL1.pressed(GTAdrive());
+    //Controller1.ButtonR1.pressed(GTAdrive());
+    
     //Controller1.ButtonL2.pressed(autonomous);
     // Set up initial screen
     Controller1.Screen.clearScreen();
