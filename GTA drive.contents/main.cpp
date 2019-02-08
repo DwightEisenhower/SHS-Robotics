@@ -220,6 +220,173 @@ void spinner_rpm_down() {
 
 //COMPETITION STUFF
 
+/**
+ * Autonomous methods
+ */
+int autonState = 1;
+/**
+ * moveStraight with power, forward direction and time
+ *
+ * @param power=100  Power
+ * @param fwd=true   Go forward?
+ * @param time=1000  Delay in ms before stopping
+ */
+void moveStraight (int power=100, bool fwd=true, int time=1000) {
+    vex::directionType dir = fwd ? vex::directionType::fwd : vex::directionType::rev;
+    for (int i = 0; i < NUM_MOTORS; i++) {
+        lmotors[i].spin(dir, power, percentUnits::pct);
+        rmotors[i].spin(dir, power, percentUnits::pct);
+    }
+    
+    task::sleep(time);
+    set_stopping_mode_for_motors(hold);
+    stopAllMotors();
+}
+
+/**
+ * Move forward a certain distance
+ * @param distance  Distance to move in meters
+ * @param fwd=true  Move forward or backwards?
+ */
+void moveStraightDistance(double distance, bool fwd=true) {
+    // Robot moves at approximately 1.3 m/s
+    moveStraight(100, fwd, distance / 1.3 * 1000);
+}
+
+/*
+ * Attempt to rotate an angle. Negative is left, 
+ * positive is right. Angle is in degrees. Not 100% accurate.
+ *
+ * @param angle Angle to rotate in degrees
+ */
+void rotate(int angle) {
+    /* If turning left, right is forward, left backwards
+     * If turning right, right is backwards, left forwards */
+    vex::directionType dirL = angle < 0 ? vex::directionType::fwd : vex::directionType::rev;
+    vex::directionType dirR = angle > 0 ? vex::directionType::fwd : vex::directionType::rev;
+    
+    for (int i = 0; i < NUM_MOTORS; i++) {
+        lmotors[i].spin(dirL, 100, percentUnits::pct);
+        rmotors[i].spin(dirR, 100, percentUnits::pct);
+    }
+    /* Calculate time to rotate (Rotates at around 0.36 deg/ms) */
+    int absAng = angle < 0 ? -angle : angle;
+    int time = absAng / 9 * 25;
+    
+    /* Slight adjustments for lower angles */
+    if (absAng < 80) time += 1500 / absAng;
+    else if (absAng < 190) time += 2300 / absAng;
+    else time -= 700 / absAng;
+    
+    task::sleep(time);
+    stopAllMotors();
+}
+
+/**
+ * Auton: go backwards to hit the flag, then forward
+ * and go to platform 
+ */
+void auton12(bool isRed) {
+    moveStraightDistance(1.65);
+    task::sleep(100);
+    moveStraightDistance(2.3, false);
+    task::sleep(100);
+    rotate(isRed ? -90 : 90);
+    moveStraightDistance(1.8);
+}
+
+/**
+ * Auton: Rotate 35 degrees then go forward onto
+ * the platform 
+ */
+void auton34(bool isRed) {
+    rotate(isRed ? -90 : 90);
+    moveStraightDistance(0.6);
+    rotate(isRed ? 90 : -90);
+    moveStraightDistance(1.3);
+}
+
+/**
+ * Display the current auton state
+ */
+void displayCurrentAutonState() {
+    switch (autonState) {
+        case 1:
+            Brain.Screen.setCursor(1,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("A1 - Red flag");
+            
+            Brain.Screen.setCursor(2,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("Face robot spinner towards flag");
+            break;
+        case 2:
+            Brain.Screen.setCursor(1,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("A2 - Blue flag");
+            
+            Brain.Screen.setCursor(2,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("Face robot spinner towards from flag");
+            break;
+        case 3:
+            Brain.Screen.setCursor(1,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("A3 - Red platform");
+            
+            Brain.Screen.setCursor(2,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("Face robot spinner towards opposite side");
+            break;
+        case 4:
+            Brain.Screen.setCursor(1,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("A4 - Blue platform");
+            
+            Brain.Screen.setCursor(2,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("Face robot spinner towards opposite side");
+            break;
+		case 5:
+            Brain.Screen.setCursor(1,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("A5 - AUTON disabled");
+            
+            Brain.Screen.setCursor(2,0);
+            Brain.Screen.clearLine();
+            Brain.Screen.print("Robot will now do nothing");
+    }
+    Brain.Screen.render();
+}
+
+/**
+ * Runs when screen is pressed. Toggles the
+ * auton state */
+void screenpressed(void) {
+    autonState = autonState % 5 + 1;
+    displayCurrentAutonState();
+    
+    Brain.Screen.setCursor(3,0);
+    Brain.Screen.clearLine();
+    Brain.Screen.print("Press screen to toggle auton state");
+}
+
+
+void autonomous(void){
+    switch (autonState) {
+        case 1: auton12(true);
+                break;
+        case 2: auton12(false);
+                break;
+        case 3: auton34(true);
+                break;
+        case 4: auton34(false);
+                break;
+		case 5: break;
+    }
+}
+
+
 
 void pre_auton() {
     // Set up action button bindings to scoring functions
@@ -241,6 +408,12 @@ void pre_auton() {
     Controller1.Screen.clearScreen();
     print_motor_line();
     print_spin();
+
+    /* Display initial text */
+    displayCurrentAutonState();
+    Brain.Screen.setCursor(3,0);
+    Brain.Screen.clearLine();
+    Brain.Screen.print("Press screen to toggle auton state");
 }
 
 void user_control(void){
@@ -253,6 +426,7 @@ void user_control(void){
 
 int main() {
     pre_auton();//setup
+	Competition.autonomous(autonomous);
     Competition.drivercontrol(user_control);
 }
 
