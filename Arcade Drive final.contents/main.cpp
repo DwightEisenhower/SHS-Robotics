@@ -142,6 +142,9 @@ void arcadedrive() {
         Controller1.Screen.print("J %4.0f %4.0f %3.2f   ", py, px, smooth_power);
     }
     
+    if(py < 0) {
+        px *= -1;
+    }
     if (reversed) {
         py *= -1;
     }
