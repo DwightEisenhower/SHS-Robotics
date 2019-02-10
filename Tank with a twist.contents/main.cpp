@@ -137,23 +137,27 @@ double averagePower(bool left){
 }
 
 void tankdrive() {
-    double Yinput = Controller1.Axis3.value(); //Gets the value of the joystick axis [-100, 100]
+    double Yinput = Controller1.Axis3.value();
     double Xinput = Controller1.Axis1.value();
     
     double lp = Yinput;
     double rp = Yinput;
     
     if( abs(Xinput) < 15) { //deadzone
-        lp -= abs(Xinput);
-        rp -= abs(Xinput);
+        if(Xinput < 0) {
+            lp -= Xinput;
+        } else if (Xinput > 0) {
+            rp += Xinput;
+        }
     }
-    /*
+    
     if(Controller1.ButtonR1.pressing()) {
         stopAllMotors(stopping_mode[1]);
-    }*/
+    }
     
     spin_motors(lp,false);
     spin_motors(rp, true);
+    set_stopping_mode_for_motors(stopping_mode[0]);
 }
 
 /**
@@ -362,7 +366,7 @@ void pre_auton() {
     Controller1.ButtonB.pressed(reverse_toggle);
     Controller1.ButtonY.pressed(toggle_print_info);
     Controller1.ButtonA.pressed(stopping_mode_toggle);
-    //Controller1.ButtonR1.pressed(stopAllMotors(stopping_mode[1]));
+    //Controller1.ButtonR1.pressed(stopAllMotors);
     // Set up initial screen
     Controller1.Screen.clearScreen();
     print_motor_line();
